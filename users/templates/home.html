@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Home</title>
-  </head>
-  <body>
-    <h1 style="color: rgb(128, 0, 0)">Welcome</h1>
+{% extends "base.html" %}
+
+{% block title%}
+ Home page
+{% endblock %}
+
+{% block content %}
+    <h1 style="color: rgb(128, 0, 0)">Welcome {{name}}</h1>
     <p>This is home page</p>
-  </body>
-</html>
+
+    <a href="{% url 'exit' %}">Exit</a>
+{% endblock %}

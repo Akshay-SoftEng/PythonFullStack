@@ -6,11 +6,11 @@
   <body>
     <h1 style="color: rgb(128, 0, 0)">Welcome to the profile page</h1>
     {% if is_admin%}
-    <p style="color:blueviolet;font-weight:bold;">You are Admin user</p>
+        <p style="color:blueviolet;font-weight:bold;">You are Admin user</p>
 
     {% else %}
         <p style="color:rgb(226, 43, 43);font-weight:bold;">You are not a Normal user</p>
-    {%endif%}
+    {% endif %}
     <p>Name: {{name}}</p>
     <p>Email: {{email}}</p>
     <p>City: {{city}}</p>
