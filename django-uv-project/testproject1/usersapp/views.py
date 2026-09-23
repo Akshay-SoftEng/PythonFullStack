@@ -216,3 +216,32 @@ def update_employee(request,name):
       "email":users.email,
       "department":users.department
       })
+
+@csrf_exempt
+def delete_employee(request,name):
+  if request.method == "DELETE":
+    if not request.user.is_authenticated: #to check whether the user is logged in 
+      return JsonResponse(
+      {
+        "msg":"Login Required"
+      },status=401) 
+      
+    if not request.user.has_perm(
+      "usersapp.delete_employee"
+      ):                                        # to check whther he has operational permission after loggedin
+      return JsonResponse({
+        "error": "You dont have permission"
+        },status=403)
+    try:
+      user = Employee.objects.get(name=name)
+      user.delete()
+      return JsonResponse({
+        "message":"Employee deleted Successfully",
+        "user":user.name
+      },status=200)
+    except Exception as e:
+      return JsonResponse({
+        "message":"Employee Not Found",
+        "Error":str(e)
+      },status=403)
+    
