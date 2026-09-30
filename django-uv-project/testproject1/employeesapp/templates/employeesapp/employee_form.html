@@ -1,0 +1,10 @@
+<html>
+    <body>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}   <!-- as_p implements the dynamic form as the program called with some loaded data if needed -->
+        <button type="submit">Create</button>
+        </form>
+        
+    </body>
+</html>

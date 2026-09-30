@@ -4,6 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import  authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.views import View
 import json
 from .models import Employee
 # Create your views here.
@@ -12,16 +14,18 @@ def hello(request):
     "message":"Hello App working"
   })
 
-@csrf_exempt
-def usersapi(request,username=None):
-  if request.method == "GET":
+
+#The code below is how we write the class based views by imprt views from django and make class into views
+# @csrf_exempt we dont need this for classes 
+class UserApi(View):
+  def get(self,request):  #function name should be same as method befor, thats how it maps to the get request and same with toher methods too
     users = User.objects.values().all()
 
     return JsonResponse({
       "users":list(users)
     })
 
-  elif request.method == "POST":
+  def post(self,request):
     data = json.loads(request.body)
     try:
       user = User.objects.create_user(**data)
@@ -34,9 +38,9 @@ def usersapi(request,username=None):
         "message":"User not created",
       })
 
-  elif request.method =="PUT":
+  @csrf_exempt
+  def put(self,request,username):
     data = json.loads(request.body)
-
     try:
       user = User.objects.get(username=username)
       # user = User.objects.filter(username=username)
@@ -53,8 +57,8 @@ def usersapi(request,username=None):
         "message":"User not found",
         "Error":str(e)
       },status=403)
-
-  elif request.method == "PATCH":
+  @csrf_exempt
+  def patch(self,request,username):
     data = json.loads(request.body)
     
     try:
@@ -72,8 +76,8 @@ def usersapi(request,username=None):
       "message":"User not found",
       "Error":str(e)
       },status=403)
-
-  elif request.method == "DELETE":
+  @csrf_exempt
+  def delete(self,request,username):
     try:
       user = User.objects.get(username=username)
       user.delete()
@@ -87,80 +91,64 @@ def usersapi(request,username=None):
         "Error":str(e)
       },status=403)
 
-def groupapi(request):
-  groups = Group.objects.values().all()
-  return JsonResponse({
-    "groups":list(groups)
-  })
+# def groupapi(request):
+#   groups = Group.objects.values().all()
+#   return JsonResponse({
+#     "groups":list(groups)
+#   })
 
-@csrf_exempt
-def login_user(request):
-  if request.method == "POST":
-    data = json.loads(request.body)
-    username = data["username"]
-    password = data["password"]
-    user = authenticate(
-      username = username,
-      password = password
-    )
+# @csrf_exempt
+# def login_user(request):
+#   if request.method == "POST":
+#     data = json.loads(request.body)
+#     username = data["username"]
+#     password = data["password"]
+#     user = authenticate(
+#       username = username,
+#       password = password
+#     )
 
-    if user is None:
-      return JsonResponse({
-        "error":"Invalid username or password"
-      },status = 401)
+#     if user is None:
+#       return JsonResponse({
+#         "error":"Invalid username or password"
+#       },status = 401)
 
-    login(request,user)
-    return JsonResponse(
-      {
-        "msg":"login Successfull",
-        "username":username,
-        "email":user.email # we are accessing the email from user object also not passing it for the authentication
-      })
+#     login(request,user)
+#     return JsonResponse(
+#       {
+#         "msg":"login Successfull",
+#         "username":username,
+#         "email":user.email # we are accessing the email from user object also not passing it for the authentication
+#       })
 
-def logout_user(request):
-  username = request.user.username
-  logout(request)
-  return JsonResponse({
-    "msg":"Logout Successfull",
-    "Username":username
-  },status=200)
+# def logout_user(request):
+#   username = request.user.username
+#   logout(request)
+#   return JsonResponse({
+#     "msg":"Logout Successfull",
+#     "Username":username
+#   },status=200)
 
-def profile(request):
+# def profile(request):
 
-  if not request.user.is_authenticated:
-    return JsonResponse(
-      {
-        "msg":"User not found"
-      },status=401
-    )
+#   if not request.user.is_authenticated:
+#     return JsonResponse(
+#       {
+#         "msg":"User not found"
+#       },status=401
+#     )
 
-  return JsonResponse({
-    "username":request.user.username, #to get the credentials from the session that we crated using login in the above api
-    "email":request.user.email
-  })
+#   return JsonResponse({
+#     "username":request.user.username, #to get the credentials from the session that we crated using login in the above api
+#     "email":request.user.email
+#   })
 
-@csrf_exempt
-@login_required(login_url="/users/hello/")
-@permission_required("usersapp.add_employee", login_url="/users/hello/")
-def create_employee(request): #we using this api to perform operations only for who have loggedin
-  if request.method=="POST":
 
-    # if not request.user.is_authenticated: #to check whether the user is logged in/ we commented this because we have added the login_required decorator at the top of the method
-    #   return JsonResponse(
-    #   {
-    #     "msg":"Login Required"
-    #   },status=401) 
-    
-    # print(request.user.get_all_permissions()) #we can delete this condition too because we added perm_required decorarator 
-    # if not request.user.has_perm(
-    #   "usersapp.add_employee"
-    # ):                                        # to check whther he has operational permission after loggedin
-    #   return JsonResponse({
-    #     "error": "You dont have permission"
-    #   },status=403)
+class EmployeeView(LoginRequiredMixin,PermissionRequiredMixin,View): #we using this api to perform CRUD operations only for who have loggedin and have permissions by CBV
 
-    
-
+  permission_required = "usersapp.add_employee"
+  @csrf_exempt
+  def post(self,request):
     data = json.loads(request.body)
     name = data["name"]
     email = data["email"]

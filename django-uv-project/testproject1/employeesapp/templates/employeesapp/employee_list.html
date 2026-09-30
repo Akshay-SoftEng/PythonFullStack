@@ -1,0 +1,11 @@
+<html>
+    <body>
+        {% for emp in object_list %}
+        <div>
+            <h3>{{emp.name}}</h3>
+            <p>{{emp.email}}</p>
+            <p>{{emp.department}}</p>
+        </div>
+        {% endfor %}
+    </body>
+</html>
