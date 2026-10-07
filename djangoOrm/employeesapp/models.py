@@ -24,6 +24,12 @@ class Employee(models.Model):
     max_digits=10,
     decimal_places=2
   )
+
+  bonus = models.DecimalField(
+    max_digits=10,
+    decimal_places=2,
+    default=0
+  )
   department = models.ForeignKey(
     Department,
     on_delete=models.CASCADE,
